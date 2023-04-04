@@ -74,23 +74,24 @@ if st.button("Crédit accordé ou refusé ?"):
             with col1:
                 st.header("Prédiction : ")
                 if "res1" not in st.session_state:
-                    st.session_state["res1"] = requests.post('https://app-loan-fastapi.herokuapp.com/predict', data = json.dumps(body))
-                if float(st.write(st.session_state.res1).proba.json()[0]) <= 0.3:
-                    prediction="Crédit refusé"
+                    st.session_state['res1'] = requests.post('https://app-loan-fastapi.herokuapp.com/predict', data = json.dumps(body))
+                for res1 in st.session_state.keys():
+                    if float(st.write(res1).proba) <= 0.3:
+                        prediction="Crédit refusé"
                     
                    
-                elif float(st.write(st.session_state.res1).proba.json()[0]) > 0.3:
-                    prediction="Crédit accordé"
-                    
-                else:
-                    "Erreur"
+                    elif float(st.write(res1).proba) > 0.3:
+                        prediction="Crédit accordé"
+                        
+                    else:
+                        "Erreur"
                 st.subheader(prediction)
               
             with col2:
                 st.header("La jauge de prédiction : ")
                 fig = go.Figure(go.Indicator(
                      domain = {'x': [0, 1], 'y': [0, 1]},
-                     value = float(st.write(st.session_state.res1).proba.json()[0]),
+                     value = float(st.write(res1).proba),
                      mode = "gauge+number",
                      title = {'text': "Score client"},
                      delta = {'reference': 1},
@@ -160,10 +161,10 @@ if st.button("Crédit accordé ou refusé ?"):
                          #'score_min': df[option].min(),
                          #'score_max': df[option].max()}])
             
-                        'score_client':st.write(st.session_state.res1).client_data.option,
-                        'score_moyen': st.write(st.session_state.res1).mean_feat.option,
-                        'score_min':st.write(st.session_state.res1).min_feat.option,
-                        'score_max': st.write(st.session_state.res1).max_feat.option
+                        'score_client':st.write(res1).client_data.option,
+                        'score_moyen': st.write(res1).mean_feat.option,
+                        'score_min':st.write(res1).min_feat.option,
+                        'score_max': st.write(res1).max_feat.option
                         }])
             
           
