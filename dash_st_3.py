@@ -7,7 +7,7 @@ Created on Thu Mar 23 11:47:49 2023
 
 import streamlit as st
 import requests
-import numpy as np
+#import numpy as np
 import pandas as pd
 
 import json
@@ -65,7 +65,7 @@ tab1, tab2, tab3, tab4  = st.tabs(["Client", "Caractéristiques locales", "Carac
 if st.button("Crédit accordé ou refusé ?"):
     
     
-    if int(body.get('SK_ID_CURR')) in liste_id:
+    #if int(body.get('SK_ID_CURR')) in liste_id:
         
         with tab1:
            
@@ -73,12 +73,13 @@ if st.button("Crédit accordé ou refusé ?"):
        
             with col1:
                 st.header("Prédiction : ")
-                res1 = requests.post('https://app-loan-fastapi.herokuapp.com/predict', data = json.dumps(body))
-                if float(res1.json()[0]) <= 0.3:
+                if "res1" not in st.session_state:
+                    st.session_state["res1"] = requests.post('https://app-loan-fastapi.herokuapp.com/predict', data = json.dumps(body))
+                if float(st.write(st.session_state.res1).proba.json()[0]) <= 0.3:
                     prediction="Crédit refusé"
                     
                    
-                elif float(res1.json()[0]) > 0.3:
+                elif float(st.write(st.session_state.res1).proba.json()[0]) > 0.3:
                     prediction="Crédit accordé"
                     
                 else:
@@ -89,7 +90,7 @@ if st.button("Crédit accordé ou refusé ?"):
                 st.header("La jauge de prédiction : ")
                 fig = go.Figure(go.Indicator(
                      domain = {'x': [0, 1], 'y': [0, 1]},
-                     value = float(res1.json()[0]),
+                     value = float(st.write(st.session_state.res1).proba.json()[0]),
                      mode = "gauge+number",
                      title = {'text': "Score client"},
                      delta = {'reference': 1},
@@ -154,10 +155,16 @@ if st.button("Crédit accordé ou refusé ?"):
                 (C))
     
             XX = pd.DataFrame([{
-                         'score_client': df[option][df[option].index[df['SK_ID_CURR']==int(body.get('SK_ID_CURR'))][0]], 
-                         'score_moyen': df[option].mean(), 
-                         'score_min': df[option].min(),
-                         'score_max': df[option].max()}])
+                         #'score_client': df[option][df[option].index[df['SK_ID_CURR']==int(body.get('SK_ID_CURR'))][0]], 
+                         #'score_moyen': df[option].mean(), 
+                         #'score_min': df[option].min(),
+                         #'score_max': df[option].max()}])
+            
+                        'score_client':st.write(st.session_state.res1).client_data.option,
+                        'score_moyen': st.write(st.session_state.res1).mean_feat.option,
+                        'score_min':st.write(st.session_state.res1).min_feat.option,
+                        'score_max': st.write(st.session_state.res1).max_feat.option
+                        }])
             
           
             data = XX.iloc[0].to_dict()
@@ -167,8 +174,7 @@ if st.button("Crédit accordé ou refusé ?"):
                 
                 
                 
-    else: 
-            {'Client pas identifié'}
+    
     
 
    
