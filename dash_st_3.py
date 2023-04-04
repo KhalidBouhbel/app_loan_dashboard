@@ -73,7 +73,7 @@ if st.button("Crédit accordé ou refusé ?"):
        
             with col1:
                 st.header("Prédiction : ")
-                res1 = requests.post('https://app-loan-fastapi.herokuapp.com/docs#/default/predict_target_predict_post', data = json.dumps(body))
+                res1 = requests.post('https://app-loan-fastapi.herokuapp.com/predict', data = json.dumps(body))
                 if float(res1.json()[0]) <= 0.3:
                     prediction="Crédit refusé"
                     
