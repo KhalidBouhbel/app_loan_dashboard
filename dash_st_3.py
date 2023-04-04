@@ -73,12 +73,12 @@ if st.button("Crédit accordé ou refusé ?"):
        
             with col1:
                 st.header("Prédiction : ")
-                res1 = requests.post('https://app-loan-fastapi.herokuapp.com/docs', data = json.dumps(body))
-                if (float(res1.json()[0]) <= 0.3):
+                res1 = requests.post('https://app-loan-fastapi.herokuapp.com/docs#/default/predict_target_predict_post', data = json.dumps(body))
+                if (float(res1.json())[0]) <= 0.3:
                     prediction="Crédit refusé"
                     
                    
-                elif(float(res1.json()[0]) > 0.3):
+                elif(float(res1.json())[0]) > 0.3:
                     prediction="Crédit accordé"
                     
                 else:
@@ -89,7 +89,7 @@ if st.button("Crédit accordé ou refusé ?"):
                 st.header("La jauge de prédiction : ")
                 fig = go.Figure(go.Indicator(
                      domain = {'x': [0, 1], 'y': [0, 1]},
-                     value = float(res1.json()[0]),
+                     value = float((res1.json())[0]),
                      mode = "gauge+number",
                      title = {'text': "Score client"},
                      delta = {'reference': 1},
