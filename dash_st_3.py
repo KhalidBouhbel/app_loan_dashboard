@@ -5,20 +5,22 @@ Created on Thu Mar 23 11:47:49 2023
 @author: kbouh
 """
 
+
+                
 import streamlit as st
 import requests
-#import numpy as np
+
 import pandas as pd
 
 import json
 
-#import joblib
-#from joblib import load
+
 import pickle
-#import gzip
+
 
 import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
+
 
 from lime import lime_tabular
 
@@ -45,6 +47,7 @@ classifier = pickle.load(open("DummyClassifier.pkl", 'rb'))
 
 
 SK_ID_CURR=st.text_input('Veuillez saisir l\'identifiant d\'un client:', )
+#SK_ID_CURR=st.selectbox('Choisir un client ', (liste_id))
 
 body = {
     'SK_ID_CURR':SK_ID_CURR
@@ -55,17 +58,40 @@ body = {
 st.title('Dashboard Scoring Credit')
 st.subheader("Prédictions de scoring client et comparaison à l'ensemble des clients")
 
+C = df.drop(['SK_ID_CURR','TARGET'], axis=1).columns
+
+option = st.selectbox('Choisir une caractéristique',
+    (C))
+try:
+
+    
+    score_client = df[df['SK_ID_CURR']==int(SK_ID_CURR)].reset_index()[option][0]
+    
+except (KeyError, ValueError):
+    score_client = 'client inconnu'
+    
+
+   
+XX = pd.DataFrame([{
+             'score_client': score_client, 
+             'score_moyen': df[option].mean(), 
+             'score_min': df[option].min(),
+             'score_max': df[option].max()}])
 
 
+data = XX.iloc[0].to_dict()
 
 
-tab1, tab2, tab3, tab4  = st.tabs(["Client", "Caractéristiques locales", "Caractéristiques globales", "Comparaison à l'ensemble des clients"])
+st.bar_chart(data)
+
+
+tab1, tab2, tab3  = st.tabs(["Client", "Caractéristiques locales", "Caractéristiques globales"])
 
 
 if st.button("Crédit accordé ou refusé ?"):
     
     
-    #if int(body.get('SK_ID_CURR')) in liste_id:
+    if int(body.get('SK_ID_CURR')) in liste_id:
         
         with tab1:
            
@@ -73,25 +99,23 @@ if st.button("Crédit accordé ou refusé ?"):
        
             with col1:
                 st.header("Prédiction : ")
-                if "res1" not in st.session_state:
-                    st.session_state['res1'] = requests.post('https://app-loan-fastapi.herokuapp.com/predict', data = json.dumps(body))
-                for res1 in st.session_state.keys():
-                    if float(st.write(res1).proba) <= 0.3:
-                        prediction="Crédit refusé"
+                res1 = requests.post('http://127.0.0.1:8000/predict', data = json.dumps(body))
+                if (float(res1.json()[0]) <= 0.3):
+                    prediction="Crédit refusé"
                     
                    
-                    elif float(st.write(res1).proba) > 0.3:
-                        prediction="Crédit accordé"
-                        
-                    else:
-                        "Erreur"
+                elif(float(res1.json()[0]) > 0.3):
+                    prediction="Crédit accordé"
+                    
+                else:
+                    "Erreur"
                 st.subheader(prediction)
               
             with col2:
                 st.header("La jauge de prédiction : ")
                 fig = go.Figure(go.Indicator(
                      domain = {'x': [0, 1], 'y': [0, 1]},
-                     value = float(st.write(res1).proba),
+                     value = float(res1.json()[0]),
                      mode = "gauge+number",
                      title = {'text': "Score client"},
                      delta = {'reference': 1},
@@ -147,34 +171,11 @@ if st.button("Crédit accordé ou refusé ?"):
             st.header("Principales features au niveau global: ")
             st.image('feature_importance_RFC.png')
            
-      
-        with tab4:
-            
-            C = df.drop(['SK_ID_CURR','TARGET'], axis=1).columns
-           
-            option = st.selectbox('Choisir une caractéristique',
-                (C))
-    
-            XX = pd.DataFrame([{
-                         #'score_client': df[option][df[option].index[df['SK_ID_CURR']==int(body.get('SK_ID_CURR'))][0]], 
-                         #'score_moyen': df[option].mean(), 
-                         #'score_min': df[option].min(),
-                         #'score_max': df[option].max()}])
-            
-                        'score_client':st.write(res1).client_data.option,
-                        'score_moyen': st.write(res1).mean_feat.option,
-                        'score_min':st.write(res1).min_feat.option,
-                        'score_max': st.write(res1).max_feat.option
-                        }])
-            
-          
-            data = XX.iloc[0].to_dict()
-            
-            
-            st.bar_chart(data)
                 
                 
                 
+    else: 
+            {'Client pas identifié'}                
     
     
 
