@@ -41,7 +41,7 @@ def application(environ, start_response):
 df = pd.read_csv('data_reduced3.csv')
 df = df.drop(['Unnamed: 0'], axis=1)
 liste_id = df['SK_ID_CURR'].tolist()
-classifier = pickle.load(open("RFClassifier3.pkl", 'rb'))
+classifier = pickle.load(open("DummyClassifier.pkl", 'rb'))
 #classifier = pickle.loads(gzip.open("RFClassifier3.pkl.gz","rb").read())
 
 
